@@ -1,0 +1,21 @@
+{
+  "folders":
+  [
+    {
+      "path": "."
+    }
+  ],
+  "build_systems":
+  [
+    {
+      "name": "Python (custom)",
+      "cmd": ["python", "${file}"],
+      "env":
+      {
+        "PYTHONPATH": "./packages:./submodules/packages",
+        "PATH": "/anaconda/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+      },
+      "working_dir": "$project_path"
+    }
+  ]
+}

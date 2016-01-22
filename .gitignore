@@ -1,0 +1,9 @@
+.texpadtmp/
+cache/
+*.pdf
+*.pyc
+data
+.DS_Store
+.ipynb_checkpoints/
+*.sublime-workspace
+
