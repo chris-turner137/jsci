@@ -7,30 +7,54 @@ except:
 from abc import ABCMeta, abstractmethod
 
 class WriteStream(object):
+  """
+  Interface which accepts a stream of JSON events as method calls. Includes
+  some convenience methods implemented in terms of the abstract methods.
+  """
   __metaclass__ = ABCMeta
 
   @abstractmethod
   def flush(self):
+    """
+    Flush any underlying file object etc. In other cases should be taken as
+    encouragement to eagerly process any buffered data.
+    """
     raise NotImplementedError
 
   @abstractmethod
   def enter_array(self):
+    """
+    Starts an array. Use wrap_array instead of this method.
+    """
     raise NotImplementedError
 
   @abstractmethod
   def exit_array(self):
+    """
+    Ends an array. Use wrap_array instead of this method.
+    """
     raise NotImplementedError
 
   @abstractmethod
   def enter_object(self):
+    """
+    Starts an object. Use wrap_object instead of this method.
+    """
     raise NotImplementedError
 
   @abstractmethod
   def exit_object(self):
+    """
+    Ends an object. Use wrap_object instead of this method.
+    """
     raise NotImplementedError
 
   @contextmanager
   def wrap_array(self):
+    """
+    Context manager for wrapping the values of an array in an exception safe
+    manner.
+    """
     self.enter_array()
     try:
       yield
@@ -39,6 +63,10 @@ class WriteStream(object):
 
   @contextmanager
   def wrap_object(self):
+    """
+    Context manager for wrapping the key-value pairs of an array in an exception
+    safe manner.
+    """
     self.enter_object()
     try:
       yield
@@ -47,13 +75,38 @@ class WriteStream(object):
 
   @abstractmethod
   def write_key(self, key):
+    """
+    Write the key for a key-value pair.
+
+    Parameters
+    ----------
+    key : The key for the key-value pair.
+    """
     raise NotImplementedError
 
   @abstractmethod
   def write_value(self, value, cls=None):
+    """
+    Write a value as an element of an array of as the value of a key-value pair.
+
+    Parameters
+    ----------
+    value : Value to write as element of an array or value of a key-value pair.
+    cls   : json.JSONEncoder implementation to pass the value through.
+    """
     raise NotImplementedError
 
   def write_pair(self, key, value, cls=None):
+    """
+    Write a key-value pair into the current object. If writing the value raises
+    an exception then 'null' is written.
+
+    Parameters
+    ----------
+    key   : (string) Key for the pair.
+    value : Value for the pair.
+    cls   : json.JSONEncoder implementation to pass the value through.
+    """
     self.write_key(key)
     try:
       self.write_value(value, cls)
@@ -63,6 +116,9 @@ class WriteStream(object):
 
   @abstractmethod
   def unwind(self):
+    """
+    Reset the stream to the root level finishing all arrays, object and pairs.
+    """
     raise NotImplementedError
 
 class NullWriteStream(WriteStream):
@@ -107,6 +163,10 @@ class StreamState(Enum):
   post_elem = 7 # After value in array; before ',' separator
 
 class FileWriteStream(WriteStream):
+  """
+  Implementation of the WriteStream interface which serialises JSON from events
+  to text and writes it to a file object.
+  """
   def __init__(self, file, indent=0):
     self.file = file
     self.indent = indent
@@ -115,22 +175,6 @@ class FileWriteStream(WriteStream):
 
   def flush(self):
     self.file.flush()
-
-  @contextmanager
-  def wrap_object(self):
-    self.enter_object()
-    try:
-      yield
-    finally:
-      self.exit_object()
-
-  @contextmanager
-  def wrap_array(self):
-    self.enter_array()
-    try:
-      yield
-    finally:
-      self.exit_array()
 
   def enter_array(self):
     if self.stack[-1] != StreamState.in_pair:
@@ -194,14 +238,6 @@ class FileWriteStream(WriteStream):
     self.file.write(' '*(self.depth * self.indent) + json.dumps(key) + ': ')
     self.stack[-1] = StreamState.in_pair
 
-  def write_pair(self, key, value, cls=None):
-    self.write_key(key)
-    try:
-      self.write_value(value, cls)
-    except:
-      self.write_value(None)
-      raise
-
   def write_value(self, obj, cls=None):
     if self.stack[-1] == StreamState.in_object:
       raise RuntimeError
@@ -229,8 +265,7 @@ class FileWriteStream(WriteStream):
       elif state == StreamState.in_object or state == StreamState.post_pair:
         exit_object()
       elif state == StreamState.in_pair:
-        self.file.write('null')
-        self.stack[-1] = StreamState.post_pair
+        self.write_value(None)
       else:
         break
 
