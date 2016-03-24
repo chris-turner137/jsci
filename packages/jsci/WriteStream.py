@@ -181,7 +181,7 @@ class FileWriteStream(WriteStream):
     if prev == StreamState.post_pair or prev == StreamState.post_elem:
       self.file.write(',\n' + ' '*(self.depth * self.indent))
     elif prev != StreamState.in_pair:
-      self.file.write(' '*(self.depth * self.indent))
+      self.file.write('\n' + ' '*(self.depth * self.indent))
     self.file.write('[')
     self.depth += 1
     self.stack.append(StreamState.in_array)
