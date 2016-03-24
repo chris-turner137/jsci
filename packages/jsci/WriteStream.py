@@ -177,7 +177,10 @@ class FileWriteStream(WriteStream):
     self.file.flush()
 
   def enter_array(self):
-    if self.stack[-1] != StreamState.in_pair:
+    prev = self.stack[-1]
+    if prev == StreamState.post_pair or prev == StreamState.post_elem:
+      self.file.write(',\n' + ' '*(self.depth * self.indent))
+    elif prev != StreamState.in_pair:
       self.file.write(' '*(self.depth * self.indent))
     self.file.write('[')
     self.depth += 1
@@ -285,6 +288,18 @@ if __name__ == '__main__':
       stream.write_value("long long langweilig")
     stream.exit_object()
     stream.exit_array()
+
+  output = FileWriteStream(sys.stdout, indent=2)
+  write_to(output)
+  sys.stdout.write('\n')
+
+  def write_to(stream):
+    with stream.wrap_array():
+      for i in xrange(10):
+        with stream.wrap_array():
+          for j in xrange(10):
+            with stream.wrap_object():
+              stream.write_pair('key', 'value')
 
   output = FileWriteStream(sys.stdout, indent=2)
   write_to(output)
