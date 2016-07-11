@@ -259,7 +259,7 @@ class FileWriteStream(WriteStream):
       self.stack[-1] = StreamState.post_pair
     elif self.stack[-1] == StreamState.predoc:
       s = json.dumps(obj, cls=cls, indent=self.indent)
-      self.out.write(s.replace('\n', '\n' + ' '*(self.depth * self.indent)))
+      self.file.write(s.replace('\n', '\n' + ' '*(self.depth * self.indent)))
       self.stack[-1] = StreamState.post_pair
     else:
       raise RuntimeError, self.stack[-1]
