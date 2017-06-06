@@ -276,6 +276,80 @@ class FileWriteStream(WriteStream):
       else:
         break
 
+class MemoryWriteStream(WriteStream):
+  """
+  Implement of the WriteStream interface which constructs an in memory
+  representation of the event stream.
+  """
+  def __init__(self):
+    self.state = [StreamState.predoc]
+    self.value = [[]]
+
+  def flush(self):
+    pass
+
+  def enter_array(self):
+    value = []
+    self.write_value(value)
+    self.state.append(StreamState.in_array)
+    self.value.append(value)
+
+  def exit_array(self):
+    prev_state = self.state[-1]
+    if (prev_state != StreamState.post_elem
+        and prev_state != StreamState.in_array):
+      raise ValueError(prev_state)
+    self.state.pop()
+    self.value.pop()
+
+  def enter_object(self):
+    value = {}
+    self.write_value(value)
+    self.state.append(StreamState.in_object)
+    self.value.append(value)
+
+  def exit_object(self):
+    prev_state = self.state[-1]
+    if (prev_state != StreamState.post_pair
+        and prev_state != StreamState.in_object):
+      raise ValueError(prev_state)
+    self.state.pop()
+    self.value.pop()
+
+  def write_key(self, key):
+    prev_state = self.state[-1]
+    if (prev_state != StreamState.post_pair
+        and prev_state != StreamState.in_object):
+      raise ValueError(prev_state)
+    self.key = key
+    self.state[-1] = StreamState.in_pair
+
+  def write_value(self, value, cls=None):
+    if cls is not None:
+      value = cls().default(value)
+    prev_state = self.state[-1]
+    if (prev_state == StreamState.in_array
+        or prev_state == StreamState.post_elem
+        or prev_state == StreamState.predoc
+        or prev_state == StreamState.postdoc):
+      self.value[-1].append(value)
+      self.state[-1] = StreamState.post_elem
+    elif prev_state == StreamState.in_pair:
+      self.value[-1].update({self.key: value})
+      self.state[-1] = StreamState.post_pair
+    elif prev_state == StreamState.predoc:
+      self.value[-1].append(value)
+      self.state[-1] = StreamState.postdoc
+    else:
+      raise ValueError(prev_state)
+
+  def unwind(self):
+    if self.state[-1] == StreamState.predoc:
+      return
+    else:
+      self.state = [StreamState.postdoc]
+      self.value = [self.value[0]]
+
 if __name__ == '__main__':
   # TODO: Write some proper unit tests
   import sys
