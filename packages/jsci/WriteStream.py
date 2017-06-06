@@ -144,10 +144,10 @@ class NullWriteStream(WriteStream):
   def exit_object(self):
     pass
 
-  def write_key(self):
+  def write_key(self, key):
     pass
 
-  def write_value(self):
+  def write_value(self, value, cls=None):
     pass
 
   def unwind(self):
