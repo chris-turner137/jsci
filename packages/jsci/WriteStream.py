@@ -201,7 +201,7 @@ class FileWriteStream(WriteStream):
       self.file.write('\n')
       return self.exit_array()
     if self.stack[-1] != StreamState.in_array:
-      raise RuntimeError, self.stack[-1]
+      raise RuntimeError(self.stack[-1])
     self.stack.pop()
     self.depth -= 1
     self.file.write(' '*(self.depth * self.indent) + ']')
@@ -262,7 +262,7 @@ class FileWriteStream(WriteStream):
       self.file.write(s.replace('\n', '\n' + ' '*(self.depth * self.indent)))
       self.stack[-1] = StreamState.post_pair
     else:
-      raise RuntimeError, self.stack[-1]
+      raise RuntimeError(self.stack[-1])
 
   def unwind(self):
     while self.stack[-1] != self.predoc and self.stack[-1] != self.predoc:
@@ -279,6 +279,7 @@ class FileWriteStream(WriteStream):
 if __name__ == '__main__':
   # TODO: Write some proper unit tests
   import sys
+  from builtins import range
 
   NullWriteStream()
 
@@ -299,9 +300,9 @@ if __name__ == '__main__':
 
   def write_to(stream):
     with stream.wrap_array():
-      for i in xrange(10):
+      for i in range(10):
         with stream.wrap_array():
-          for j in xrange(10):
+          for j in range(10):
             with stream.wrap_object():
               stream.write_pair('key', 'value')
 

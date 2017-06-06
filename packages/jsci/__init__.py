@@ -17,6 +17,6 @@ def get_version_string():
   return get_git_describe()
 
 if __name__ == '__main__':
-  print 'Hash:      "{}"'.format(get_git_revision_hash())
-  print 'ShortHash: "{}"'.format(get_git_revision_short_hash())
-  print 'Desc:      "{}"'.format(get_git_describe())
+  print('Hash:      "{}"'.format(get_git_revision_hash()))
+  print('ShortHash: "{}"'.format(get_git_revision_short_hash()))
+  print('Desc:      "{}"'.format(get_git_describe()))
