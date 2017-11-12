@@ -12,12 +12,12 @@
 			"Darwin":
 			{
 				"PATH": "$HOME/anaconda3/bin:$PATH",
-				"PYTHONPATH": "./packages:./submodules/packages:$PYTHONPATH"
+				"PYTHONPATH": "${project_path}/packages:${project_path}/submodules/packages:$PYTHONPATH"
 			},
 			"Linux":
 			{
 				"PATH": "$HOME/anaconda3/bin:$PATH",
-				"PYTHONPATH": "./packages:./submodules/packages:$PYTHONPATH"
+				"PYTHONPATH": "${project_path}/packages:${project_path}/submodules/packages:$PYTHONPATH"
 			}
 		},
 		"python_interpreter": "~/anaconda3/bin/python"
