@@ -1,21 +1,25 @@
 {
-  "folders":
-  [
-    {
-      "path": "."
-    }
-  ],
-  "build_systems":
-  [
-    {
-      "name": "Python (custom)",
-      "cmd": ["python", "${file}"],
-      "env":
-      {
-        "PYTHONPATH": "./packages:./submodules/packages",
-        "PATH": "/anaconda/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
-      },
-      "working_dir": "$project_path"
-    }
-  ]
+	"folders":
+	[
+		{
+			"path": "."
+		}
+	],
+	"settings":
+	{
+		"env":
+		{
+			"Darwin":
+			{
+				"PATH": "$HOME/anaconda3/bin:$PATH",
+				"PYTHONPATH": "./packages:./submodules/packages:$PYTHONPATH"
+			},
+			"Linux":
+			{
+				"PATH": "$HOME/anaconda3/bin:$PATH",
+				"PYTHONPATH": "./packages:./submodules/packages:$PYTHONPATH"
+			}
+		},
+		"python_interpreter": "~/anaconda3/bin/python"
+	}
 }

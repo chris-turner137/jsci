@@ -38,21 +38,21 @@ class NumericDecoder(json.JSONDecoder):
 
 if __name__ == '__main__':
   c = 17.2 + 5.0J
-  print c
+  print(c)
 
   s = json.dumps(c, cls=NumericEncoder)
-  print s
+  print(s)
 
-  print json.loads(s, cls=NumericDecoder)
+  print(json.loads(s, cls=NumericDecoder))
 
   from numpy import array
   A = np.random.rand(4,4) + 1.0j * np.random.rand(4,4)
-  print A
+  print(A)
 
   s = json.dumps(A, cls=NumericEncoder)
-  print s
+  print(s)
 
   Ap = json.loads(s, cls=NumericDecoder)
-  print Ap
+  print(Ap)
 
-  print np.linalg.norm(A - Ap)
+  print(np.linalg.norm(A - Ap))
