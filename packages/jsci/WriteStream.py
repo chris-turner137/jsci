@@ -6,13 +6,11 @@ except:
   Enum = object
 from abc import ABCMeta, abstractmethod
 
-class WriteStream(object):
+class WriteStream(object,metaclass=ABCMeta):
   """
   Interface which accepts a stream of JSON events as method calls. Includes
   some convenience methods implemented in terms of the abstract methods.
   """
-  __metaclass__ = ABCMeta
-
   @abstractmethod
   def flush(self):
     """
