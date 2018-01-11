@@ -177,11 +177,11 @@ class FileWriteStream(WriteStream):
   def enter_array(self):
     prev = self.stack[-1]
     if prev == StreamState.post_pair or prev == StreamState.post_elem:
-      self.file.write(',\n' + ' '*(self.depth * self.indent))
+      self.file.write(',\n' + ' ' * self.depth)
     elif prev != StreamState.in_pair:
-      self.file.write('\n' + ' '*(self.depth * self.indent))
+      self.file.write('\n' + ' ' * self.depth)
     self.file.write('[')
-    self.depth += 1
+    self.depth += self.indent
     self.stack.append(StreamState.in_array)
 
   def _post_value(self):
@@ -201,8 +201,8 @@ class FileWriteStream(WriteStream):
     if self.stack[-1] != StreamState.in_array:
       raise RuntimeError(self.stack[-1])
     self.stack.pop()
-    self.depth -= 1
-    self.file.write(' '*(self.depth * self.indent) + ']')
+    self.depth -= self.indent
+    self.file.write(' ' * self.depth + ']')
     self._post_value()
 
   def enter_object(self):
@@ -212,11 +212,11 @@ class FileWriteStream(WriteStream):
     elif prev == StreamState.predoc:
       self.file.write(' '*(self.depth * self.indent))
     elif prev == StreamState.post_pair or prev == StreamState.post_elem:
-      self.file.write(',\n' + ' '*(self.depth * self.indent))
+      self.file.write(',\n' + ' ' * self.depth)
     else:
-      self.file.write('\n' + ' '*(self.depth * self.indent))
+      self.file.write('\n' + ' ' * self.depth)
     self.file.write('{\n')
-    self.depth += 1
+    self.depth += self.indent
     self.stack.append(StreamState.in_object)
 
   def exit_object(self):
@@ -227,8 +227,8 @@ class FileWriteStream(WriteStream):
     if self.stack[-1] != StreamState.in_object:
       raise RuntimeError
     self.stack.pop()
-    self.depth -= 1
-    self.file.write(' '*(self.depth * self.indent) + '}')
+    self.depth -= syntax-example-json
+    self.file.write(' ' * self.depth + '}')
     self._post_value()
 
   def write_key(self, key):
@@ -236,16 +236,16 @@ class FileWriteStream(WriteStream):
       self.file.write(',\n')
     elif self.stack[-1] != StreamState.in_object:
       raise RuntimeError
-    self.file.write(' '*(self.depth * self.indent) + json.dumps(key) + ': ')
+    self.file.write(' ' * self.depth + json.dumps(key) + ': ')
     self.stack[-1] = StreamState.in_pair
 
   def write_value(self, obj, cls=None):
     if self.stack[-1] == StreamState.in_object:
       raise RuntimeError
     elif self.stack[-1] == StreamState.in_array:
-      self.file.write('\n' + ' '*(self.depth * self.indent))
+      self.file.write('\n' + ' ' * self.depth)
       s = json.dumps(obj, cls=cls, indent=self.indent)
-      self.file.write(s.replace('\n', '\n' + ' '*(self.depth * self.indent)))
+      self.file.write(s.replace('\n', '\n' + ' ' * self.depth))
       self.stack[-1] = StreamState.post_elem
     elif self.stack[-1] == StreamState.post_elem:
       self.file.write(',')
@@ -253,11 +253,11 @@ class FileWriteStream(WriteStream):
       return self.write_value(obj, cls)
     elif self.stack[-1] == StreamState.in_pair:
       s = json.dumps(obj, cls=cls, indent=self.indent)
-      self.file.write(s.replace('\n', '\n' + ' '*(self.depth * self.indent)))
+      self.file.write(s.replace('\n', '\n' + ' ' * self.depth))
       self.stack[-1] = StreamState.post_pair
     elif self.stack[-1] == StreamState.predoc:
       s = json.dumps(obj, cls=cls, indent=self.indent)
-      self.file.write(s.replace('\n', '\n' + ' '*(self.depth * self.indent)))
+      self.file.write(s.replace('\n', '\n' + ' ' * self.depth))
       self.stack[-1] = StreamState.post_pair
     else:
       raise RuntimeError(self.stack[-1])
@@ -340,6 +340,18 @@ class MemoryWriteStream(WriteStream):
       self.state[-1] = StreamState.postdoc
     else:
       raise ValueError(prev_state)
+
+  @contextmanager
+  def wrap_indent(self, indent):
+    """
+    Context manager for changing indentation level in an exception safe manner.
+    """
+    saved = self.indent
+    self.indent = indent
+    try:
+      yield
+    finally:
+      self.indent = saved
 
   def unwind(self):
     if self.state[-1] == StreamState.predoc:
