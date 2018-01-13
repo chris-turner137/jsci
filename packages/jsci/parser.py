@@ -8,6 +8,8 @@ from abc import ABCMeta, abstractmethod
 json_grammar = """
 ?start: value
 
+stream: value*
+
 value: object
     | array
     | string
@@ -50,6 +52,10 @@ class DefaultTransformer(Transformer):
     Produces a callback which can be used to parse files, strings etc.
     """
     return Lark(json_grammar, parser='lalr', transformer=self).parse
+
+  def stream_parser(self):
+    p = Lark(json_grammar, parser='lalr', transformer=self, start='stream')
+    return p.parse
 
   _array = lambda self, s: list(s[1:-1])
   _pair = tuple
@@ -145,7 +151,7 @@ if __name__ == '__main__':
       "nothing"      : null
     }
   '''
-  parse = PrintingTransformer().parser()
+  parse = PrintingTransformer().stream_parser()
   j = parse(test_json)
-  print(j)
-  assert j == json.loads(test_json)
+  print(j.children)
+  assert j.children[0] == json.loads(test_json)
