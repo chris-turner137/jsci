@@ -16,8 +16,8 @@ class NumericEncoder(json.JSONEncoder):
     return super(NumericEncoder, self).default(obj)
 
 class NumericDecoder(json.JSONDecoder):
-  def __init__(self, encoding=None):
-    json.JSONDecoder.__init__(self, encoding, object_hook=self.dict_to_object)
+  def __init__(self):
+    json.JSONDecoder.__init__(self, object_hook=self.dict_to_object)
 
   def dict_to_object(self, d):
     if 'real' in d and 'imag' in d:

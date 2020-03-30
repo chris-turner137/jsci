@@ -227,7 +227,7 @@ class FileWriteStream(WriteStream):
     if self.stack[-1] != StreamState.in_object:
       raise RuntimeError
     self.stack.pop()
-    self.depth -= syntax-example-json
+    self.depth -= self.indent
     self.file.write(' ' * self.depth + '}')
     self._post_value()
 
